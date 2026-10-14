@@ -84,6 +84,62 @@ La première commande permet d'examiner les règles et leurs compteurs. La secon
 
 ![Topologie GNS3](captures/06-compteurs-acl.png)
 
+
+## 7.A Amélioration : journalisation des paquets refusés
+
+### Objectif
+
+La journalisation permet de compléter le filtrage réseau par une visibilité sur les paquets refusés. Elle facilite l'observation du comportement de l'ACL et constitue une première étape vers la supervision de la sécurité réseau.
+
+### Configuration
+
+La journalisation a été ajoutée à la règle de refus de l'ACL étendue `BLOQUER_PING_PC1_PC2` à l'aide du mot-clé `log`.
+
+```text
+deny icmp host 192.168.10.10 host 192.168.20.10 echo log
+```
+
+### Vérification
+
+La commande suivante permet de consulter les règles et leurs compteurs :
+
+```text
+show ip access-lists BLOQUER_PING_PC1_PC2
+```
+
+Résultat observé :
+
+```text
+10 deny icmp host 192.168.10.10 host 192.168.20.10 echo log (10 matches)
+20 permit ip any any
+```
+
+Le compteur indique que cinq paquets ont correspondu à la règle de refus pendant la période considérée.
+
+La commande `show logging` permet de consulter l'état du système de journalisation et les messages disponibles. La présence effective d'un message associé à l'ACL doit être vérifiée séparément.
+
+### Résultat attendu
+
+- Les requêtes Ping correspondant à la règle sont bloquées.
+- Les autres paquets IPv4 sont autorisés par la règle `permit ip any any`, sous réserve des autres mécanismes de filtrage.
+- Les événements de refus peuvent être journalisés si l'image IOS et la configuration de journalisation prennent en charge leur émission.
+
+### Captures d'écran
+
+- **Capture 07 :** règle ACL incluant le mot-clé `log`.
+![Topologie GNS3](captures/07-ACL%20avec%20journalisation.png)
+
+- **Capture 08 :** compteur de correspondances après les tentatives de Ping bloquées.
+![Topologie GNS3](captures/08-Événement%20de%20sécurité.png)
+
+- **Capture 09 :** message de journalisation associé au refus, si celui-ci est effectivement visible.
+![Topologie GNS3](captures/09-Compteur%20de%20correspondances.png)
+
+### Limites
+
+Cette configuration constitue une démonstration pédagogique. Elle ne représente pas une politique de sécurité complète et ne remplace pas une solution centralisée de collecte et d'analyse des journaux, telle que Syslog.
+
+
 ## 8. Tests et résultats
 
 | Test | Résultat attendu | Résultat observé |
